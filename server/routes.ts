@@ -1,16 +1,49 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { loginSchema } from "@shared/schema";
 
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
-  // put application routes here
-  // prefix all routes with /api
+  // Login endpoint
+  app.post("/api/login", async (req, res) => {
+    try {
+      // Validate request body
+      const result = loginSchema.safeParse(req.body);
+      
+      if (!result.success) {
+        return res.status(400).json({
+          success: false,
+          error: "بيانات غير صالحة"
+        });
+      }
 
-  // use storage to perform CRUD operations on the storage interface
-  // e.g. storage.insertUser(user) or storage.getUserByUsername(username)
+      const { username, password } = result.data;
+      
+      // Validate credentials
+      const user = await storage.validateUser(username, password);
+      
+      if (!user) {
+        return res.status(401).json({
+          success: false,
+          error: "اسم المستخدم أو كلمة المرور غير صحيحة"
+        });
+      }
+
+      return res.json({
+        success: true,
+        user
+      });
+    } catch (error) {
+      console.error("Login error:", error);
+      return res.status(500).json({
+        success: false,
+        error: "حدث خطأ في الخادم"
+      });
+    }
+  });
 
   return httpServer;
 }
