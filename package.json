@@ -3,9 +3,12 @@
   "version": "1.0.0",
   "type": "module",
   "license": "MIT",
-  "scripts": {
+"scripts": {
   "dev": "cross-env NODE_ENV=development tsx server/index.ts",
-  "start": "cross-env NODE_ENV=production node dist/index.cjs"
+  "build:frontend": "vite build",
+  "build:backend": "tsc",
+  "build": "npm run build:frontend && npm run build:backend",
+  "start": "cross-env NODE_ENV=production node build/server/index.js"
 }
 ,
   "dependencies": {

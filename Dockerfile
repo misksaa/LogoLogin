@@ -1,34 +1,37 @@
-# 1. Build stage
-FROM node:18 AS builder
+# --- Build stage ---
+FROM node:20 AS builder
 
 WORKDIR /app
-
-COPY package*.json ./
-COPY tsconfig*.json ./
-COPY server ./server
-COPY src ./src
-COPY public ./public
 
 # Install dependencies
+COPY package*.json ./
 RUN npm install
 
-# Build the project
+# Copy all source files
+COPY . .
+
+# Build backend + frontend
 RUN npm run build
 
-# 2. Production stage
-FROM node:18
+# --- Production stage ---
+FROM node:20-alpine
 
 WORKDIR /app
 
+# Install only runtime dependencies
 COPY package*.json ./
-RUN npm install --only=production
+RUN npm install --omit=dev
 
+# Copy built backend, frontend, shared
+COPY --from=builder /app/build/server ./server
+COPY --from=builder /app/build/shared ./shared
 COPY --from=builder /app/dist ./dist
-COPY public ./public
+COPY --from=builder /app/dist/public ./server/public  
+
 
 ENV NODE_ENV=production
-ENV PORT=5000
 
-EXPOSE 5000
+EXPOSE 3000
 
-CMD ["node", "dist/index.cjs"]
+# Run compiled backend
+CMD ["node", "server/index.js"]

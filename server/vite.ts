@@ -1,7 +1,9 @@
 import { type Express } from "express";
 import { createServer as createViteServer, createLogger } from "vite";
 import { type Server } from "http";
-import viteConfig from "../vite.config";
+// import viteConfig from "../vite.config";
+// Add .js extension to vite.config import
+import viteConfig from "../vite.config.js";
 import fs from "fs";
 import path from "path";
 import { nanoid } from "nanoid";
@@ -39,14 +41,14 @@ export async function setupVite(server: Server, app: Express) {
         import.meta.dirname,
         "..",
         "client",
-        "index.html",
+        "index.html"
       );
 
       // always reload the index.html file from disk incase it changes
       let template = await fs.promises.readFile(clientTemplate, "utf-8");
       template = template.replace(
         `src="/src/main.tsx"`,
-        `src="/src/main.tsx?v=${nanoid()}"`,
+        `src="/src/main.tsx?v=${nanoid()}"`
       );
       const page = await vite.transformIndexHtml(url, template);
       res.status(200).set({ "Content-Type": "text/html" }).end(page);

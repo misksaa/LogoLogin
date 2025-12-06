@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { storage } from "./storage";
-import { loginSchema } from "@shared/schema";
+import { storage } from "./storage.js";
+import { loginSchema } from "../shared/schema.js";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -12,35 +12,35 @@ export async function registerRoutes(
     try {
       // Validate request body
       const result = loginSchema.safeParse(req.body);
-      
+
       if (!result.success) {
         return res.status(400).json({
           success: false,
-          error: "بيانات غير صالحة"
+          error: "بيانات غير صالحة",
         });
       }
 
       const { username, password } = result.data;
-      
+
       // Validate credentials
       const user = await storage.validateUser(username, password);
-      
+
       if (!user) {
         return res.status(401).json({
           success: false,
-          error: "اسم المستخدم أو كلمة المرور غير صحيحة"
+          error: "اسم المستخدم أو كلمة المرور غير صحيحة",
         });
       }
 
       return res.json({
         success: true,
-        user
+        user,
       });
     } catch (error) {
       console.error("Login error:", error);
       return res.status(500).json({
         success: false,
-        error: "حدث خطأ في الخادم"
+        error: "حدث خطأ في الخادم",
       });
     }
   });
